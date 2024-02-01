@@ -37,7 +37,7 @@ import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainCard(currentDay: MutableState<WeatherModel>, searchList: MutableList<String>, onClickSync: () -> Unit, onClickSearch: (String) -> Unit) {
+fun MainCard(currentDay: MutableState<WeatherModel>, onClickSync: () -> Unit, onClickSearch: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,7 +92,7 @@ fun MainCard(currentDay: MutableState<WeatherModel>, searchList: MutableList<Str
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Search(searchList, onClickSearch)
+                    Search(onClickSearch)
 //                    IconButton(onClick = {
 ////                        onClickSearch.invoke()
 //

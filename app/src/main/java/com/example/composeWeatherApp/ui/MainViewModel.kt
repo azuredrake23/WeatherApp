@@ -2,22 +2,25 @@ package com.example.composeWeatherApp.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.example.composeWeatherApp.data.utils.PreferencesManager
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.composeWeatherApp.domain.SearchListRep
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class MainViewModel(context: Application): AndroidViewModel(context) {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    context: Application,
+    private val searchListRep: SearchListRep
+    ): AndroidViewModel(context) {
 
-    private val _searchText = MutableStateFlow("")
-    val searchText = _searchText.asStateFlow()
+    fun getList(): Flow<List<String>> = searchListRep.getList()
 
-    private val _isSearching = MutableStateFlow(false)
-    val isSearching = _isSearching.asStateFlow()
+    fun addNewSearchItem(newItem: String){
+        searchListRep.addSearchItem(newItem)
+    }
 
-    private val _weatherList = MutableStateFlow(listOf<String>())
-
-
-    var weatherList = PreferencesManager(context).getList("searchList")
-    var currentWeatherList = weatherList
+    fun removeSearchItem(searchItem: String){
+        searchListRep.removeSearchItem(searchItem)
+    }
 
 }

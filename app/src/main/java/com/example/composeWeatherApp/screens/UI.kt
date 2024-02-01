@@ -1,5 +1,6 @@
 package com.example.composeWeatherApp.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,7 +31,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,6 +48,7 @@ import com.example.composeWeatherApp.ui.theme.LightBlue
 import com.example.composeWeatherApp.data.WeatherModel
 import com.example.composeWeatherApp.data.utils.SearchFilter
 import com.example.composeWeatherApp.ui.MainViewModel
+import com.example.composeWeatherApp.utils.Extentions.swapList
 
 @Composable
 fun MainList(list: List<WeatherModel>, currentDay: MutableState<WeatherModel>) {
@@ -142,16 +146,22 @@ fun DialogSearch(dialogState: MutableState<Boolean>, onSubmit: (String) -> Unit)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Search(list: MutableList<String>, onClickSearch: (String) -> Unit) {
+fun Search(onClickSearch: (String) -> Unit) {
     val mainViewModel = viewModel<MainViewModel>()
+    val searchList = remember {
+        mutableStateListOf<String>()
+    }
+    val currentList = remember {
+        mutableStateListOf<String>()
+    }
+
+    searchList.swapList(mainViewModel.getList().collectAsState(initial = emptyList()).value)
+    if (searchList.size >= 10)
+        mainViewModel.removeSearchItem(searchList[searchList.lastIndex])
 
     var searchText by remember {
         mutableStateOf("")
     }
-
-//    var currentList by remember {
-//        mutableStateOf(list.toList())
-//    }
 
     var isActive by remember {
         mutableStateOf(false)
@@ -164,11 +174,15 @@ fun Search(list: MutableList<String>, onClickSearch: (String) -> Unit) {
             if (text == " ") {
                 searchText = ""
             }
-//            mainViewModel.currentWeatherList = SearchFilter(mainViewModel.weatherList).search(text)
+            currentList.swapList(SearchFilter(searchList).search(text))
+            SearchFilter(searchList).search(text)
         },
         onSearch = { text ->
             isActive = false
             onClickSearch(text)
+            mainViewModel.addNewSearchItem(
+                text
+            )
         },
         active = isActive,
         onActiveChange = {
@@ -181,9 +195,9 @@ fun Search(list: MutableList<String>, onClickSearch: (String) -> Unit) {
             Text(text = "Search...")
         },
         colors = SearchBarDefaults.colors(
-            containerColor = Color.LightGray,
+            containerColor = Color.White,
             inputFieldColors = TextFieldDefaults.colors(
-                focusedTextColor = Color.White
+                focusedTextColor = Color.Black
             )
         ),
         leadingIcon = {
@@ -209,17 +223,31 @@ fun Search(list: MutableList<String>, onClickSearch: (String) -> Unit) {
         }
     ) {
         LazyColumn {
-            items(mainViewModel.currentWeatherList) { item ->
+            items(currentList) { item ->
                 Box(modifier = Modifier
                     .clickable {
-                        mainViewModel.currentWeatherList = SearchFilter(mainViewModel.currentWeatherList).search(item)
+                        currentList.swapList(SearchFilter(searchList).search(item))
                         isActive = false
                         searchText = item
                         onClickSearch(item)
                     }
                     .fillMaxWidth()
-                    .padding(10.dp)) {
-                    Text(text = item)
+                    .padding(10.dp)
+                    .background(color = Color.White, shape = RoundedCornerShape(4.dp))) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = item)
+                        Icon(
+                            modifier = Modifier.clickable {
+                                currentList.remove(item)
+                                mainViewModel.removeSearchItem(item)
+                            },
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close Icon"
+                        )
+                    }
                 }
             }
         }
