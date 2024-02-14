@@ -1,4 +1,4 @@
-package com.example.composeWeatherApp.screens
+package com.example.composeWeatherApp.ui.ui_addons
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,21 +18,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,34 +37,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.composeWeatherApp.ui.theme.LightBlue
-import com.example.composeWeatherApp.data.WeatherModel
+import com.example.composeWeatherApp.ui.theme.LightTransparentBlue
+import com.example.composeWeatherApp.data.models.WeatherModel
 import com.example.composeWeatherApp.data.utils.SearchFilter
-import com.example.composeWeatherApp.ui.MainViewModel
+import com.example.composeWeatherApp.ui.theme.Silver
 import com.example.composeWeatherApp.utils.Extentions.swapList
 
 @Composable
-fun MainList(list: List<WeatherModel>, currentDay: MutableState<WeatherModel>) {
+fun MainList(daysList: List<WeatherModel>, onUpdateResponseResult: (List<WeatherModel>) -> Unit) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
-        itemsIndexed(list) { _, item ->
-            ListItem(item = item, currentDay)
+        itemsIndexed(daysList) { _, item ->
+            ListItem(daysList = daysList, item = item, onUpdateResponseResult = onUpdateResponseResult)
         }
     }
 }
 
 @Composable
-fun ListItem(item: WeatherModel, currentDay: MutableState<WeatherModel>) {
+fun ListItem(daysList: List<WeatherModel>, item: WeatherModel, onUpdateResponseResult: (List<WeatherModel>) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 3.dp)
             .clickable {
-                if (item.hours.isNotEmpty())
-                    currentDay.value = item
+                if (item.hours.isNotEmpty()) {
+                    val newList = daysList.toMutableList()
+                    newList.removeFirst()
+                    newList.add(0, item)
+                    onUpdateResponseResult.invoke(newList.toList())
+                }
             },
-        colors = CardDefaults.cardColors(containerColor = LightBlue),
+        colors = CardDefaults.cardColors(containerColor = LightTransparentBlue),
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
@@ -110,54 +108,12 @@ fun ListItem(item: WeatherModel, currentDay: MutableState<WeatherModel>) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DialogSearch(dialogState: MutableState<Boolean>, onSubmit: (String) -> Unit) {
-    val dialogText = remember {
-        mutableStateOf("")
-    }
-    AlertDialog(onDismissRequest = {
-        dialogState.value = false
-    },
-        confirmButton = {
-            TextButton(onClick = {
-                onSubmit(dialogText.value)
-                dialogState.value = false
-            }) {
-                Text(text = "OK")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = {
-                dialogState.value = false
-            }) {
-                Text(text = "Cancel")
-            }
-        },
-        title = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-
-            }
-            Text(text = "Введите название города:")
-            TextField(value = dialogText.value, onValueChange = {
-                dialogText.value = it
-            })
-        }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Search(onClickSearch: (String) -> Unit) {
-    val mainViewModel = viewModel<MainViewModel>()
-    val searchList = remember {
-        mutableStateListOf<String>()
-    }
+fun Search(searchList: List<String>, onClickCloseIcon: (String) -> Unit, onClickSearch: (String) -> Unit, searchListOutOfBounds: () -> Unit) {
     val currentList = remember {
         mutableStateListOf<String>()
     }
 
-    searchList.swapList(mainViewModel.getList().collectAsState(initial = emptyList()).value)
-    if (searchList.size >= 10)
-        mainViewModel.removeSearchItem(searchList[searchList.lastIndex])
+    searchListOutOfBounds.invoke()
 
     var searchText by remember {
         mutableStateOf("")
@@ -167,7 +123,7 @@ fun Search(onClickSearch: (String) -> Unit) {
         mutableStateOf(false)
     }
 
-    SearchBar(
+    DockedSearchBar(
         query = searchText,
         onQueryChange = { text ->
             searchText = text
@@ -180,22 +136,22 @@ fun Search(onClickSearch: (String) -> Unit) {
         onSearch = { text ->
             isActive = false
             onClickSearch(text)
-            mainViewModel.addNewSearchItem(
-                text
-            )
         },
         active = isActive,
         onActiveChange = {
             isActive = it
+            if (it) {
+                currentList.swapList(searchList)
+            }
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
+            .padding(top = 20.dp),
         placeholder = {
             Text(text = "Search...")
         },
         colors = SearchBarDefaults.colors(
-            containerColor = Color.White,
+            containerColor = Silver,
             inputFieldColors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black
             )
@@ -223,7 +179,7 @@ fun Search(onClickSearch: (String) -> Unit) {
         }
     ) {
         LazyColumn {
-            items(currentList) { item ->
+            items(items = currentList.reversed()) { item ->
                 Box(modifier = Modifier
                     .clickable {
                         currentList.swapList(SearchFilter(searchList).search(item))
@@ -235,14 +191,14 @@ fun Search(onClickSearch: (String) -> Unit) {
                     .padding(10.dp)
                     .background(color = Color.White, shape = RoundedCornerShape(4.dp))) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().background(color = Silver),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = item)
                         Icon(
                             modifier = Modifier.clickable {
+                                onClickCloseIcon.invoke(item)
                                 currentList.remove(item)
-                                mainViewModel.removeSearchItem(item)
                             },
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close Icon"

@@ -3,23 +3,23 @@ package com.example.composeWeatherApp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.composeWeatherApp.data.WeatherModel
-import com.example.composeWeatherApp.data.utils.PreferencesManager
-import com.example.composeWeatherApp.domain.getData
-import com.example.composeWeatherApp.screens.MainCard
-import com.example.composeWeatherApp.screens.TabLayout
-import com.example.composeWeatherApp.ui.MainViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
+import com.example.composeWeatherApp.ui.screens.InfoScreen
+import com.example.composeWeatherApp.ui.screens.main.MainScreen
+import com.example.composeWeatherApp.ui.screens.main.MainViewModel
+import com.example.composeWeatherApp.ui.screens.search.SearchScreen
+import com.example.composeWeatherApp.ui.screens.search.SearchViewModel
 import com.example.composeWeatherApp.ui.theme.JetpackComposeAppTheme
+import com.example.composeWeatherApp.utils.Routes
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -28,44 +28,39 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val navController = rememberNavController()
+            val mainViewModel = hiltViewModel<MainViewModel>()
+            val searchViewModel = hiltViewModel<SearchViewModel>()
             JetpackComposeAppTheme {
-                val daysList = remember {
-                    mutableStateOf(listOf<WeatherModel>())
-                }
-                val currentDay = remember {
-                    mutableStateOf(WeatherModel())
-                }
-                val city = remember {
-                    mutableStateOf("London")
-                }
-                getData(this, city.value, daysList, currentDay)
-
-                Image(
-                    painter = painterResource(id = R.drawable.weather),
-                    contentDescription = "im1",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .alpha(0.8f),
-                    contentScale = ContentScale.Crop
-                )
-                Column {
-                    MainCard(
-                        currentDay,
-                        onClickSync = {
-                            getData(this@MainActivity, city.value, daysList, currentDay)
-                        },
-                        onClickSearch = {
-                            if (getData(this@MainActivity, it, daysList, currentDay)) {
-                                city.value = it
-                            }
+                NavHost(navController = navController, startDestination = Routes.MAIN_FRAGMENT){
+                    navigation(route = Routes.MAIN_FRAGMENT, startDestination = Routes.MAIN_SCREEN){
+                        composable(Routes.MAIN_SCREEN){
+                            MainScreen(context = this@MainActivity, navController = navController, mainViewModel = mainViewModel, searchViewModel = searchViewModel)
                         }
-                    )
-                    TabLayout(daysList, currentDay)
+
+                        composable(Routes.SEARCH_SCREEN){
+                            SearchScreen(navController = navController, searchViewModel = searchViewModel)
+                        }
+                    }
+
+
+                    composable(Routes.INFO_SCREEN){
+                        InfoScreen(context = this@MainActivity)
+                    }
                 }
             }
         }
     }
 }
+
+//@Composable
+//inline fun <reified T: ViewModel> NavBackStackEntry.sharedViewModel (navController: NavController): T{
+//val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
+//    val parentEntry = remember(this){
+//        navController.getBackStackEntry(navGraphRoute)
+//    }
+//    return hiltViewModel(parentEntry)
+//}
 
 
 
