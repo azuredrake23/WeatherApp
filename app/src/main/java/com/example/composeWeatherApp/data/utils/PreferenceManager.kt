@@ -2,9 +2,8 @@ package com.example.composeWeatherApp.data.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.provider.Settings.Global.putString
 import androidx.core.content.edit
-import com.example.composeWeatherApp.data.utils.Constants.SEARCH_SIZE
+import com.example.composeWeatherApp.utils.Constants.SEARCH_SIZE
 
 class PreferencesManager(context: Context) {
     private val sharedPreferences: SharedPreferences =
@@ -31,7 +30,7 @@ class PreferencesManager(context: Context) {
         }
     }
 
-    fun getList(key: String): List<String> {
+    private fun getList(key: String): List<String> {
         val serializedList = sharedPreferences.getString(key, "") ?: ""
         return serializedList.split(",")
     }

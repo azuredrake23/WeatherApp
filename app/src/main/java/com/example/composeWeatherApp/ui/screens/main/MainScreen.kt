@@ -1,97 +1,66 @@
 package com.example.composeWeatherApp.ui.screens.main
 
-import android.content.Context
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.example.composeWeatherApp.R
-import com.example.composeWeatherApp.data.models.SearchModel
 import com.example.composeWeatherApp.data.models.WeatherModel
-import com.example.composeWeatherApp.ui.screens.search.SearchViewModel
+import com.example.composeWeatherApp.ui.screens.MainViewModel
 import com.example.composeWeatherApp.ui.ui_addons.MainCard
 import com.example.composeWeatherApp.ui.ui_addons.TabLayout
-import com.example.composeWeatherApp.utils.Routes
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
-    context: Context,
-    navController: NavController,
     mainViewModel: MainViewModel,
-    searchViewModel: SearchViewModel
+    responseResultList: List<WeatherModel>,
+    currentDay: Int,
+    onPullRefresh: () -> Unit,
+    onNavigateToSearchScreen: () -> Unit
 ) {
-    with(searchViewModel) {
-        val currentCityName by cityName.collectAsStateWithLifecycle()
-        val responseResult by responseResult.collectAsStateWithLifecycle()
-
-        LaunchedEffect(key1 = Unit){
-            mainViewModel.getData(context, searchViewModel, currentCityName)
-        }
-
+    with(mainViewModel) {
         MainScreenContent(
-            responseResultList = responseResult.getList,
-            onClickSync = {
-                mainViewModel.getData(context, searchViewModel, currentCityName)
-            },
-            onNavigate = {
-                navController.navigate(Routes.SEARCH_SCREEN)
-            },
-            onUpdateResponseResult = {
-                updateResponseResult(responseResult.copy(getList = it))
+            responseResultList = responseResultList,
+            currentDay = responseResultList[currentDay],
+            onPullRefresh = onPullRefresh,
+            onNavigateToSearchScreen = onNavigateToSearchScreen,
+            onUpdateCurrentDay = { index ->
+                updateCurrentDayIndex(index)
             }
         )
     }
-
 }
 
 @Composable
 fun MainScreenContent(
     responseResultList: List<WeatherModel>,
-    onClickSync: () -> Unit,
-    onNavigate: () -> Unit,
-    onUpdateResponseResult: (List<WeatherModel>) -> Unit
+    currentDay: WeatherModel,
+    onPullRefresh: () -> Unit,
+    onNavigateToSearchScreen: () -> Unit,
+    onUpdateCurrentDay: (Int) -> Unit
 ) {
-    Image(
-        painter = painterResource(id = R.drawable.weather),
-        contentDescription = "im1",
-        modifier = Modifier
-            .fillMaxSize()
-            .alpha(0.8f),
-        contentScale = ContentScale.Crop
-    )
-    Column {
+    Column (modifier = Modifier.fillMaxSize()) {
         MainCard(
-            currentDay = responseResultList[0],
-            onClickSync = onClickSync,
-            onNavigate = onNavigate
+            currentDay = currentDay,
+            onPullRefresh = onPullRefresh,
+            onNavigateToSearchScreen = onNavigateToSearchScreen
         )
         TabLayout(
             daysList = responseResultList,
-            currentDay = responseResultList[0],
-            onUpdateResponseResult = onUpdateResponseResult
+            currentDay = currentDay,
+            onUpdateCurrentDay = onUpdateCurrentDay
         )
     }
 }
 
 @Preview
 @Composable
-fun MainScreenContentPreview(){
+fun MainScreenContentPreview() {
     MainScreenContent(
         responseResultList = listOf(WeatherModel()),
-        onClickSync = {},
-        onNavigate = {},
-        onUpdateResponseResult = {}
+        currentDay = WeatherModel(),
+        onPullRefresh = {},
+        onNavigateToSearchScreen = {},
+        onUpdateCurrentDay = {}
     )
 }

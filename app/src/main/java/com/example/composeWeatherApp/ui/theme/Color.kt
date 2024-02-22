@@ -11,5 +11,6 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val LightTransparentBlue = Color(0x800F97FF)
+val LightBlue = Color(0xFF0060AA)
 val SkyBlue = Color(0xFF91CFFF)
 val Silver = Color(0xFFDEE1E4)

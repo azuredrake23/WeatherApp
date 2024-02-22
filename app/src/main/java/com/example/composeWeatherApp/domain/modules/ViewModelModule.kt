@@ -1,18 +1,5 @@
 package com.example.composeWeatherApp.domain.modules
 
-import androidx.lifecycle.SavedStateHandle
-import com.example.composeWeatherApp.domain.repositories.searchListRep.SearchListRep
-import com.example.composeWeatherApp.domain.repositories.searchListRep.usecases.AddNewSearchItemUseCase
-import com.example.composeWeatherApp.domain.repositories.searchListRep.usecases.GetSearchListUseCase
-import com.example.composeWeatherApp.domain.repositories.searchListRep.usecases.RemoveSearchItemUseCase
-import com.example.composeWeatherApp.ui.screens.search.SearchViewModel
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
-
 //@Module
 //@InstallIn(SingletonComponent::class)
 //class ViewModelModule {

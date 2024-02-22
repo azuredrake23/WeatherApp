@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,37 +34,34 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.composeWeatherApp.ui.theme.LightTransparentBlue
 import com.example.composeWeatherApp.data.models.WeatherModel
-import com.example.composeWeatherApp.data.utils.SearchFilter
+import com.example.composeWeatherApp.utils.SearchFilter
 import com.example.composeWeatherApp.ui.theme.Silver
 import com.example.composeWeatherApp.utils.Extentions.swapList
 
 @Composable
-fun MainList(daysList: List<WeatherModel>, onUpdateResponseResult: (List<WeatherModel>) -> Unit) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        itemsIndexed(daysList) { _, item ->
-            ListItem(daysList = daysList, item = item, onUpdateResponseResult = onUpdateResponseResult)
+fun MainList(list: List<WeatherModel>, onUpdateCurrentDay: (Int) -> Unit) {
+    LazyColumn (verticalArrangement = Arrangement.Top){
+        itemsIndexed(list) { _, item ->
+            ListItem(list = list, item = item, onUpdateCurrentDay = onUpdateCurrentDay)
         }
     }
 }
 
 @Composable
-fun ListItem(daysList: List<WeatherModel>, item: WeatherModel, onUpdateResponseResult: (List<WeatherModel>) -> Unit) {
+fun ListItem(list: List<WeatherModel>, item: WeatherModel, onUpdateCurrentDay: (Int) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 3.dp)
             .clickable {
-                if (item.hours.isNotEmpty()) {
-                    val newList = daysList.toMutableList()
-                    newList.removeFirst()
-                    newList.add(0, item)
-                    onUpdateResponseResult.invoke(newList.toList())
-                }
+                if (item.hours.isEmpty()) return@clickable
+                onUpdateCurrentDay(list.indexOf(item))
             },
         colors = CardDefaults.cardColors(containerColor = LightTransparentBlue),
         shape = RoundedCornerShape(10.dp),
@@ -108,12 +104,10 @@ fun ListItem(daysList: List<WeatherModel>, item: WeatherModel, onUpdateResponseR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Search(searchList: List<String>, onClickCloseIcon: (String) -> Unit, onClickSearch: (String) -> Unit, searchListOutOfBounds: () -> Unit) {
+fun Search(searchList: List<String>, onClickCloseIcon: (String) -> Unit, onClickSearch: (String) -> Unit) {
     val currentList = remember {
         mutableStateListOf<String>()
     }
-
-    searchListOutOfBounds.invoke()
 
     var searchText by remember {
         mutableStateOf("")
@@ -187,18 +181,18 @@ fun Search(searchList: List<String>, onClickCloseIcon: (String) -> Unit, onClick
                         searchText = item
                         onClickSearch(item)
                     }
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(10.dp)
-                    .background(color = Color.White, shape = RoundedCornerShape(4.dp))) {
+                    .background(color = Silver, shape = RoundedCornerShape(4.dp))) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().background(color = Silver),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = item)
                         Icon(
                             modifier = Modifier.clickable {
-                                onClickCloseIcon.invoke(item)
-                                currentList.remove(item)
+                                onClickCloseIcon(item)
+                                currentList.removeLast()
                             },
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close Icon"

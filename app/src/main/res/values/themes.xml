@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.MySplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/sky_blue</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen_inset</item>
+        <item name="postSplashScreenTheme">@style/ComposeWeatherApp</item>
+    </style>
 
-    <style name="ComposeWeatherApp" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="ComposeWeatherApp" parent="Theme.AppCompat.Light.NoActionBar" />
 </resources>

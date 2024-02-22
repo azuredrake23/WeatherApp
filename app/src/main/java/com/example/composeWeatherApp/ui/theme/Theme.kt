@@ -2,6 +2,8 @@ package com.example.composeWeatherApp.ui.theme
 
 import android.app.Activity
 import android.os.Build
+import android.window.SplashScreen
+import android.window.SplashScreenView
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme

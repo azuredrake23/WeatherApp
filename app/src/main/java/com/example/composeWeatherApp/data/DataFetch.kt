@@ -1,13 +1,6 @@
 package com.example.composeWeatherApp.data
 
-import android.content.Context
-import android.util.Log
-import com.android.volley.Request
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
-import com.example.composeWeatherApp.data.models.SearchModel
 import com.example.composeWeatherApp.data.models.WeatherModel
-import com.example.composeWeatherApp.ui.screens.search.SearchViewModel
 import org.json.JSONArray
 import org.json.JSONObject
 

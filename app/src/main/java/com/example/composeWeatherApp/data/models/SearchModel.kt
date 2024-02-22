@@ -1,3 +1,7 @@
 package com.example.composeWeatherApp.data.models
 
-data class SearchModel(val getList: List<WeatherModel> = listOf(WeatherModel()), val state: Boolean = false)
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class SearchModel(val list: List<WeatherModel> = listOf(WeatherModel()), val state: Boolean = false): Parcelable

@@ -1,4 +1,4 @@
-package com.example.composeWeatherApp.data.utils
+package com.example.composeWeatherApp.utils
 
 class SearchFilter (private val list: List<String>) {
 

@@ -1,11 +1,15 @@
 package com.example.composeWeatherApp.ui.ui_addons
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.TabRow
@@ -28,90 +32,64 @@ import coil.compose.AsyncImage
 import com.example.composeWeatherApp.R
 import com.example.composeWeatherApp.data.models.WeatherModel
 import com.example.composeWeatherApp.data.getWeatherByHours
-import com.example.composeWeatherApp.ui.screens.search.SearchViewModel
 import com.example.composeWeatherApp.ui.theme.LightTransparentBlue
+import com.example.composeWeatherApp.utils.Constants
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
+import okhttp3.Interceptor.Companion.invoke
 
 @Composable
 fun MainCard(
     currentDay: WeatherModel,
-    onClickSync: () -> Unit,
-    onNavigate: () -> Unit
+    onPullRefresh: () -> Unit,
+    onNavigateToSearchScreen: () -> Unit
 ) {
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp)
+            .padding(12.dp),
+        colors = CardDefaults.cardColors(containerColor = LightTransparentBlue),
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
-        Card(
+        Column(
             modifier = Modifier
                 .fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = LightTransparentBlue),
-            shape = RoundedCornerShape(10.dp),
-            elevation = CardDefaults.cardElevation(0.dp)
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        modifier = Modifier.padding(start = 10.dp, top = 10.dp),
+                        modifier = Modifier.padding(15.dp),
                         text = currentDay.time,
                         fontSize = 15.sp,
                         color = Color.White
                     )
-                    AsyncImage(
-                        modifier = Modifier.size(35.dp),
-                        model = "https:" + currentDay.icon,
-                        contentDescription = "image2"
+                    Text(
+                        text = currentDay.city,
+                        fontSize = 24.sp,
+                        color = Color.White
                     )
-                }
-                Text(
-                    text = currentDay.city,
-                    fontSize = 24.sp,
-                    color = Color.White
-                )
-                Text(
-                    text = if (currentDay.currentTemp.isEmpty()) {
-                        "${
-                            currentDay.minTemp.toFloat().toInt()
-                        }°C/${currentDay.maxTemp.toFloat().toInt()}°C"
-                    } else "${currentDay.currentTemp.toFloat().toInt()}°C",
-                    fontSize = 65.sp,
-                    color = Color.White
-                )
-                Text(
-                    text = currentDay.condition,
-                    fontSize = 16.sp,
-                    color = Color.White
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-//                    SearchBar(
-//                        onActiveChange = {
-//
-//                        }
-//                    ) {
-//
-//                    }
-                    IconButton(onNavigate) {
-                        Icon(
-                            painterResource(id = R.drawable.search),
-                            contentDescription = "image3",
-                            tint = Color.White
-                        )
-                    }
+                    Text(
+                        text = if (currentDay.currentTemp.isEmpty()) {
+                            "${
+                                currentDay.minTemp.toFloat().toInt()
+                            }°C/${currentDay.maxTemp.toFloat().toInt()}°C"
+                        } else "${currentDay.currentTemp.toFloat().toInt()}°C",
+                        fontSize = 65.sp,
+                        color = Color.White
+                    )
+                    Text(
+                        text = currentDay.condition,
+                        fontSize = 16.sp,
+                        color = Color.White
+                    )
                     Text(
                         text = "${
                             currentDay.minTemp.toFloat().toInt()
@@ -119,27 +97,52 @@ fun MainCard(
                         fontSize = 16.sp,
                         color = Color.White
                     )
-                    IconButton(onClick = {
-                        onClickSync.invoke()
-                    }) {
-                        Icon(
-                            painterResource(id = R.drawable.sync),
-                            contentDescription = "image4",
-                            tint = Color.White
-                        )
-                    }
+                }
+                Box(modifier = Modifier.align(Alignment.CenterVertically)) {
+                    AsyncImage(
+                        modifier = Modifier.size(150.dp),
+                        model = "https:" + currentDay.icon,
+                        contentDescription = "image2",
+                        alignment = Alignment.Center
+                    )
                 }
             }
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 15.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                IconButton(onClick = onNavigateToSearchScreen) {
+                    Icon(
+                        painterResource(id = R.drawable.search),
+                        contentDescription = "image3",
+                        tint = Color.White
+                    )
+                }
+                IconButton(onClick = onPullRefresh) {
+                    Icon(
+                        painterResource(id = R.drawable.sync),
+                        contentDescription = "image4",
+                        tint = Color.White
+                    )
+                }
+            }
         }
     }
-
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun TabLayout(daysList: List<WeatherModel>, currentDay: WeatherModel, onUpdateResponseResult: (List<WeatherModel>) -> Unit) {
-    val tabList = listOf("DAYS", "HOURS")
+fun TabLayout(
+    daysList: List<WeatherModel>,
+    currentDay: WeatherModel,
+    onUpdateCurrentDay: (Int) -> Unit
+) {
+    val tabList = listOf(Constants.TAB_NAME_1, Constants.TAB_NAME_2)
+    val daysTabIndex = tabList.indexOf(Constants.TAB_NAME_1)
+    val hoursTabIndex = tabList.indexOf(Constants.TAB_NAME_2)
     val pagerState = rememberPagerState()
     val tabIndex = pagerState.currentPage
     val coroutineScope = rememberCoroutineScope()
@@ -151,7 +154,8 @@ fun TabLayout(daysList: List<WeatherModel>, currentDay: WeatherModel, onUpdateRe
             )
             .clip(
                 shape = RoundedCornerShape(5.dp)
-            )
+            ),
+        verticalArrangement = Arrangement.Top
     ) {
         TabRow(
             selectedTabIndex = tabIndex,
@@ -178,16 +182,21 @@ fun TabLayout(daysList: List<WeatherModel>, currentDay: WeatherModel, onUpdateRe
             }
         }
         HorizontalPager(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .height(300.dp),
+            verticalAlignment = Alignment.Top,
             count = tabList.size,
-            state = pagerState,
-            modifier = Modifier.weight(1.0f)
+            state = pagerState
         ) { index ->
             val list = when (index) {
-                0 -> daysList
-                1 -> getWeatherByHours(currentDay.hours)
+                daysTabIndex -> daysList
+                hoursTabIndex -> getWeatherByHours(currentDay.hours)
                 else -> daysList
             }
-            MainList(daysList = list, onUpdateResponseResult = onUpdateResponseResult)
+            MainList(list = list, onUpdateCurrentDay = onUpdateCurrentDay)
         }
     }
 }
+
