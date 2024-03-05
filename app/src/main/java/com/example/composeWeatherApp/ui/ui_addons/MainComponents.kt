@@ -1,25 +1,35 @@
 package com.example.composeWeatherApp.ui.ui_addons
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.TabRow
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +42,8 @@ import coil.compose.AsyncImage
 import com.example.composeWeatherApp.R
 import com.example.composeWeatherApp.data.models.WeatherModel
 import com.example.composeWeatherApp.data.getWeatherByHours
+import com.example.composeWeatherApp.data.models.ResponseState
+import com.example.composeWeatherApp.data.models.SearchModel
 import com.example.composeWeatherApp.ui.theme.LightTransparentBlue
 import com.example.composeWeatherApp.utils.Constants
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -39,7 +51,6 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
-import okhttp3.Interceptor.Companion.invoke
 
 @Composable
 fun MainCard(
@@ -176,7 +187,7 @@ fun TabLayout(
                         }
                     },
                     text = {
-                        Text(text = itemName)
+                        Text(text = itemName, color = Color.White)
                     }
                 )
             }
@@ -185,7 +196,7 @@ fun TabLayout(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .height(300.dp),
+                .height(200.dp),
             verticalAlignment = Alignment.Top,
             count = tabList.size,
             state = pagerState
@@ -195,8 +206,32 @@ fun TabLayout(
                 hoursTabIndex -> getWeatherByHours(currentDay.hours)
                 else -> daysList
             }
-            MainList(list = list, onUpdateCurrentDay = onUpdateCurrentDay)
+            HorizontalPagerListContent(
+                list = list,
+                onUpdateCurrentDay = onUpdateCurrentDay
+            )
         }
     }
 }
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun SnackBar(responseState: ResponseState){
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    if (responseState is ResponseState.Failure) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(message = responseState.error)
+            }
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
+
 

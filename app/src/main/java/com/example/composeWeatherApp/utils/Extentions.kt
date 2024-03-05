@@ -16,7 +16,7 @@ object Extentions {
             val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
             val localDateTime = LocalDateTime.parse(this, pattern)
             localDateTime.hour
-        } else 15
+        } else 0
 
         return when (hour) {
             in 0..6 -> {

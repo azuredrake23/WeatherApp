@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -45,7 +45,7 @@ import com.example.composeWeatherApp.ui.theme.Silver
 import com.example.composeWeatherApp.utils.Extentions.swapList
 
 @Composable
-fun MainList(list: List<WeatherModel>, onUpdateCurrentDay: (Int) -> Unit) {
+fun HorizontalPagerListContent(list: List<WeatherModel>, onUpdateCurrentDay: (Int) -> Unit) {
     LazyColumn (verticalArrangement = Arrangement.Top){
         itemsIndexed(list) { _, item ->
             ListItem(list = list, item = item, onUpdateCurrentDay = onUpdateCurrentDay)
